@@ -1,21 +1,15 @@
-name: Update GrapheneOS Kernel
+name: Build GrapheneOS Kernel for Samsung Galaxy A50
 
 on:
   workflow_dispatch:
     inputs:
-      build_random_kernel:
-        description: 'Set to true to build a random kernel using Robotnix, otherwise provide the port repository URL'
-        required: true
-      device:
-        description: 'Device name'
-        required: true
-      base_branch:
-        description: 'Base branch name'
+      configuration:
+        description: 'Configuration for building the kernel (e.g., device and flavor)'
         required: true
 
 jobs:
-  update_kernel:
-    name: Update GrapheneOS Kernel
+  build_kernel:
+    name: Build GrapheneOS Kernel for Samsung Galaxy A50
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -24,44 +18,14 @@ jobs:
       - name: Set up Nix
         uses: cachix/install-nix-action@v17
 
-      - name: Determine Build Numbers
+      - name: Build Kernel
         run: |
-          OLD_BUILD_NUMBER=$(grep -o -m 1 '"[^"]*"' ./flavors/grapheneos/upstream-params.nix | xargs)
-          echo "OLD_BUILD_NUMBER=$OLD_BUILD_NUMBER" >> $GITHUB_ENV
+          nix-build "https://github.com/danielfullmer/robotnix/archive/master.tar.gz" \
+            --arg configuration '{ device="samsung-a50"; flavor="vanilla"; }' \
+            -A img
 
-          nix develop -c ./flavors/grapheneos/extract-upstream-params.sh
-
-          NEW_BUILD_NUMBER=$(grep -o -m 1 '"[^"]*"' ./flavors/grapheneos/upstream-params.nix | xargs)
-          echo "NEW_BUILD_NUMBER=$NEW_BUILD_NUMBER" >> $GITHUB_ENV
-
-      - name: Upstream Kernel Source
-        if: env.OLD_BUILD_NUMBER != env.NEW_BUILD_NUMBER
-        run: |
-          if [ "${{ github.event.inputs.build_random_kernel }}" = "true" ]; then
-            # Example commands to build random kernel using Robotnix
-             git config --global user.email "plodmrasif@gmail.com"
-             git config --global user.name "maxregnerklos"
-            git clone https://github.com/maxregnerklos/robotnix.git
-            cd robotnix
-            ./build.sh --flavor ${{ github.event.inputs.device }}-kernel
-            # Adjust options according to Robotnix usage for building random kernels
-          else
-            # Example commands to upstream kernel source using port repository
-            git clone "${{ github.event.inputs.base_kernel_repo }}" kernel
-            cd kernel
-            git checkout "${{ github.event.inputs.base_branch }}"
-            # Apply necessary changes or patches here
-            git push origin HEAD:"${{ github.event.inputs.base_branch }}"
-          fi
-
-      - name: Zip Kernel Source
-        if: env.OLD_BUILD_NUMBER != env.NEW_BUILD_NUMBER
-        run: |
-          zip -r kernel_source.zip kernel/
-
-      - name: Upload Kernel Source as Artifact
-        if: env.OLD_BUILD_NUMBER != env.NEW_BUILD_NUMBER
+      - name: Upload Kernel Image as Artifact
         uses: actions/upload-artifact@v2
         with:
-          name: kernel_source
-          path: kernel_source.zip
+          name: kernel_image
+          path: result/boot.img
