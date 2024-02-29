@@ -39,9 +39,9 @@ jobs:
         run: |
           if [ "${{ github.event.inputs.build_random_kernel }}" = "true" ]; then
             # Example commands to build random kernel using Robotnix
-            git clone https://github.com/GrapheneOS/robotnix.git
-            git config --global user.email "plodmrasif@gmail.com"
-            git config --global user.name "maxregnerklos"
+             git config --global user.email "plodmrasif@gmail.com"
+             git config --global user.name "maxregnerklos"
+            git clone https://github.com/maxregnerklos/robotnix.git
             cd robotnix
             ./build.sh --flavor ${{ github.event.inputs.device }}-kernel
             # Adjust options according to Robotnix usage for building random kernels
