@@ -20,6 +20,7 @@ jobs:
 
       - name: Build Kernel
         run: |
+          export CCACHE=100G
           nix-build "https://github.com/danielfullmer/robotnix/archive/master.tar.gz" \
             --arg configuration '{ device="samsung-a50"; flavor="vanilla"; }' \
             -A img
