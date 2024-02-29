@@ -38,11 +38,11 @@ jobs:
         if: env.OLD_BUILD_NUMBER != env.NEW_BUILD_NUMBER
         run: |
           # Example commands to upstream kernel source
-          git clone ${GITHUB_EVENT.inputs.base_kernel_repo} kernel
+          git clone "${{ github.event.inputs.base_kernel_repo }}" kernel
           cd kernel
-          git checkout ${GITHUB_EVENT.inputs.base_branch}
+          git checkout "${{ github.event.inputs.base_branch }}"
           # Apply necessary changes or patches here
-          git push origin HEAD:${GITHUB_EVENT.inputs.base_branch}
+          git push origin HEAD:"${{ github.event.inputs.base_branch }}"
 
       - name: Zip Kernel Source
         if: env.OLD_BUILD_NUMBER != env.NEW_BUILD_NUMBER
